@@ -37,9 +37,10 @@ int main(int argc, char **argv)
     char buf[MAXLINE]; 
     rio_t rio; //buf 관리하는 읽기 상태 관리자
     
-    /*
-    clientfd에서 읽을 준비를 하고
-    rio 안에 현재 읽기 상태를 저장한다는 뜻이에요
+    /* rio를 clientfd에서 읽을 수 있도록 초기화하는 함수
+    rio 필드(rio_fd)dp 어떤 fd에서 읽을지 저장하고
+    내부 버퍼 상태를 0으로 초기화하고
+    버퍼 시작 위치를 맞춰서
     */
     rio_readinitb(&rio, clientfd);
     
@@ -50,15 +51,30 @@ int main(int argc, char **argv)
     */
     while (fgets(buf, MAXLINE, stdin) != NULL) {
 
-        //통신 버퍼를 전체 돌면서 뭔가를 함
-        //표준 입력에서 텍스트 줄을 반복해서 읽는 루프에 진입
-        //서버에 텍스트 줄을 전송하고 서버에서 에코 줄을 읽어서 그 결과를 표준 출력으로 인쇄한다.
+       
+        //송신(클라 소켓에 buf를 보냄)
+        /* Rio_writen 함수: 클라이언트 소켓에 버퍼의 데이터를 안정적으로 전송
+        소켓(clientfd)에 
+        보낼 문자열이 들어있는 버퍼(buf)를 
+        strlen(buf) 길이만큼
+        소켓에 안정적으로 전송한다
+
+        "안정적": Rio_writen은 한 번에 다 못 보내면 여러 번 나눠서라도 끝까지 보내주는 함수
+        일반 write()보다 “끝까지 보낸다”는 점에서 더 안전
+        */
         Rio_writen(clientfd, buf, strlen(buf));
+
+        /* Rio_readlineb: (에코) 수신
+        *큰 그림: 서버 -> 네트워크 -> clientfd 소켓 -> Rio_readlineb -> buf
+        서버로부터 클라 소켓소켓으로 들어온 데이터를 buf에 복사
+        */
         if (Rio_readlineb(&rio, buf, MAXLINE) > 0) {
-            Fputs(buf, stdout);
-        } else {
+            Fputs(buf, stdout); //문자열(buf))을 표준 출력(stdout)에 출력
+        } 
+        //함수 반환값이 음수면 예외처리
+        else 
             break;
-        }
+        
     }
 
     //식별자를 닫는다 => 클라의 소켓을 닫음

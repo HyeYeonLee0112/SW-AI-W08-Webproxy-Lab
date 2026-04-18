@@ -246,6 +246,84 @@ while (fgets(buf, MAXLINE, stdin) != NULL) {
 - 서버에서 한 줄 응답 수신(`Rio_readlineb`) 후 화면 출력(`Fputs`)
 - EOF 또는 종료 응답이 오면 루프 종료
 
+```mermaid
+flowchart TD
+  A[readline] --> B{result}
+  B -->|positive| C[save line]
+  C --> D[print]
+  D --> E[next]
+  B -->|zero| F[EOF]
+  F --> G[end]
+  B -->|negative| H[error]
+  H --> G
+```
+
+해석:
+- 반환값이 `0보다 크면` 한 줄을 정상적으로 읽은 것이다.
+- 반환값이 `0이면` EOF이거나 상대방이 연결을 종료한 상황으로 본다.
+- 반환값이 `0보다 작으면` 읽기 실패로 보고 루프를 끝낸다.
+
+### `buf`가 반복마다 어떻게 바뀌는가
+
+`buf`는 한 번만 쓰고 끝나는 공간이 아니라, `while`이 돌 때마다 **입력값을 담았다가, 서버 응답으로 다시 덮어쓰는 임시 공간**이다.
+
+흐름은 이렇게 볼 수 있다.
+
+```text
+사용자 입력
+   ↓
+fgets(buf, MAXLINE, stdin)
+   ↓
+buf = "입력한 문자열"
+   ↓
+Rio_writen(clientfd, buf, strlen(buf))
+   ↓
+서버가 같은 내용을 돌려줌
+   ↓
+Rio_readlineb(&rio, buf, MAXLINE)
+   ↓
+buf = "서버 응답 문자열"
+   ↓
+Fputs(buf, stdout)
+```
+
+예시: 사용자가 순서대로 `hello`, `bye`, 그리고 EOF(입력 종료)를 넣는 경우
+
+```mermaid
+flowchart TD
+  S[루프 시작]
+  S --> L1
+
+  subgraph LOOP1[1회전]
+    L1[fgets 결과: hello] --> L2[buf = hello]
+    L2 --> L3[Rio_writen 전송]
+    L3 --> L4[Rio_readlineb 수신]
+    L4 --> L5[buf = hello]
+    L5 --> L6[Fputs 출력]
+  end
+
+  L6 --> C1{다음 while 검사}
+  C1 -->|계속| L7
+
+  subgraph LOOP2[2회전]
+    L7[fgets 결과: bye] --> L8[buf = bye]
+    L8 --> L9[Rio_writen 전송]
+    L9 --> L10[Rio_readlineb 수신]
+    L10 --> L11[buf = bye]
+    L11 --> L12[Fputs 출력]
+  end
+
+  L12 --> C2{다음 while 검사}
+  C2 -->|EOF| N[while 종료]
+```
+
+핵심 포인트:
+- `while`은 `fgets` 결과가 `NULL`이 아닌 동안 계속 돈다.
+- 한 바퀴마다 `buf`는 먼저 사용자 입력을 담고, 그 다음 서버 응답으로 덮어써진다.
+- `Rio_writen`은 `buf`를 읽어서 보내기만 하고, `Rio_readlineb`가 `buf` 내용을 새로 바꾼다.
+- 그래서 `buf`는 루프 한 바퀴 안에서 “송신용 내용”과 “수신용 내용”을 번갈아 담는다.
+ - `subgraph` 하나가 `while`의 한 바퀴를 뜻한다고 보면 된다.
+
 ## 2.9 `rio_t`는 무엇인가
 
 - `rio_t`는 CS:APP의 Robust I/O에서 쓰는 **읽기 상태 저장용 구조체 타입**이다.
@@ -269,6 +347,32 @@ typedef struct {
 | `rio_cnt` | 내부 버퍼에 남은 바이트 수 | `0` | `12` |
 | `rio_bufptr` | 다음에 읽을 위치 | `rio_buf` 시작 주소 | `rio_buf + 5` |
 | `rio_buf` | 내부 버퍼 저장 공간 | 빈 버퍼 | `"GET / HTTP/1.0\r\n..."` 일부 저장 |
+
+### `Rio_readinitb`가 하는 일
+
+- `Rio_readinitb(&rio, clientfd)`는 `rio`의 읽기 상태를 `clientfd` 기준으로 초기화한다.
+- 즉, `rio`의 필드들을 읽기 시작할 수 있는 상태로 맞춰 주는 함수다.
+- `clientfd` 자체를 바꾸는 것이 아니라, `rio`가 `clientfd`를 읽도록 준비시킨다.
+
+초기화 전후 예시:
+
+```c
+// 초기화 전
+rio.rio_fd = ?;
+rio.rio_cnt = ?;
+rio.rio_bufptr = ?;
+
+//초기화
+Rio_readinitb(&rio, clientfd);
+
+// 초기화 직후
+rio.rio_fd = clientfd; //`rio_fd`는 `clientfd`를 기억한다.
+rio.rio_cnt = 0; //아직 읽은 데이터가 없으므로 `0`
+rio.rio_bufptr = rio.rio_buf; //내부 버퍼의 시작 위치를 가리킨다.
+```
+- 이후 `Rio_readlineb`가 이 상태를 바탕으로 데이터를 읽어 간다.
+
+
 
 ## 2.10 핵심 정리
 - `argv`는 실행명까지 포함한 문자열 포인터 배열.
