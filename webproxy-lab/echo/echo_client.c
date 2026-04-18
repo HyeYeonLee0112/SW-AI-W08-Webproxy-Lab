@@ -23,15 +23,24 @@ int main(int argc, char **argv)
     //열려있는?또는 소켓을 열어서 클라의 소켓 식별자를 반환
     int clientfd = Open_clientfd(host, port);
 
-    //예외처리
+    //clientfd가 음수면 예외처리
     if (clientfd < 0) {
         errno = -clientfd;
         unix_error("Open_clientfd");
     }
 
-    char buf[MAXLINE]; //통신용 버퍼
-    rio_t rio; //이건 공부해야
-    //읽어서...
+    /*
+    buf: “데이터를 담는 임시 상자”
+    rio는 “그 상자를 관리하는 읽기 상태 관리자”
+    */
+    //(입력받은 문자열 & 서버 응답)을 임시 저장하는 메모리 공간
+    char buf[MAXLINE]; 
+    rio_t rio; //buf 관리하는 읽기 상태 관리자
+    
+    /*
+    clientfd에서 읽을 준비를 하고
+    rio 안에 현재 읽기 상태를 저장한다는 뜻이에요
+    */
     rio_readinitb(&rio, clientfd);
     
     /* 루프 종료조건

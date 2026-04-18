@@ -196,6 +196,21 @@ int open_clientfd(char *hostname, char *port) {
    - 실패하면 `close()`하고 다음 후보로 간다.
 3. 끝까지 실패하면 `-1`.
 4. `getaddrinfo` 자체 실패는 `-2`.
+5. 호스트 이름 하나가 DNS에서 여러 IP 주소로 해석될 수 있어서, 그 후보들을 순회할 수 있다.
+
+예시:
+```text
+host = "example.com"
+port = "8080"
+
+DNS / getaddrinfo 결과 후보
+  후보 1: IPv6 2606:2800:220:1:248:1893:25c8:1946
+  후보 2: IPv6 2606:2800:220:1:248:1893:25c8:1947
+  후보 3: IPv4 93.184.216.34
+  후보 4: IPv4 93.184.216.35
+```
+
+이렇게 후보가 여러 개 나오면 `open_clientfd()`가 하나씩 `socket()`과 `connect()`를 시험해 본다.
 
 ```mermaid
 flowchart TD
@@ -231,7 +246,31 @@ while (fgets(buf, MAXLINE, stdin) != NULL) {
 - 서버에서 한 줄 응답 수신(`Rio_readlineb`) 후 화면 출력(`Fputs`)
 - EOF 또는 종료 응답이 오면 루프 종료
 
-## 2.9 핵심 정리
+## 2.9 `rio_t`는 무엇인가
+
+- `rio_t`는 CS:APP의 Robust I/O에서 쓰는 **읽기 상태 저장용 구조체 타입**이다.
+- `buf`가 데이터를 잠깐 담는 공간이라면, `rio_t`는 그 읽기 과정을 관리하는 상태 상자다.
+- 소켓/파일에서 데이터를 안정적으로 이어 읽기 위해 `fd`, 남은 바이트 수, 현재 위치, 내부 버퍼를 함께 기억한다.
+
+```c
+#define RIO_BUFSIZE 8192
+typedef struct {
+    int rio_fd;                /* 어느 소켓에서 읽는지 기억한다. */
+    int rio_cnt;               /* 아직 소비하지 않은 데이터가 몇 바이트 남았는지 */
+    char *rio_bufptr;          /* 내부 버퍼 안에서 현재 읽을 위치에 대한 포인터 */
+    char rio_buf[RIO_BUFSIZE]; /* 실제 데이터를 잠깐 저장하는 버퍼 */
+} rio_t;
+```
+### `rio_t` 내부 필드 예시
+
+| 필드 | 의미 | 초기화 직후 예시 | 읽기 중 예시 |
+|---|---|---|---|
+| `rio_fd` | 연결된 fd | `clientfd` | `clientfd` |
+| `rio_cnt` | 내부 버퍼에 남은 바이트 수 | `0` | `12` |
+| `rio_bufptr` | 다음에 읽을 위치 | `rio_buf` 시작 주소 | `rio_buf + 5` |
+| `rio_buf` | 내부 버퍼 저장 공간 | 빈 버퍼 | `"GET / HTTP/1.0\r\n..."` 일부 저장 |
+
+## 2.10 핵심 정리
 - `argv`는 실행명까지 포함한 문자열 포인터 배열.
 - `host`, `port`는 그 배열의 문자열 시작 주소를 담는 `char*` 포인터.
 - `open_clientfd`는 이 문자열을 바탕으로 주소 해석 후 소켓을 만들어 정수형 `fd`를 돌려준다.
