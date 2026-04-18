@@ -1,0 +1,21 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "DevContainer Linux",
+      "compilerPath": "/usr/bin/gcc",
+      "intelliSenseMode": "linux-gcc-x64",
+      "cStandard": "gnu17",
+      "cppStandard": "gnu++17",
+      "defines": [
+        "_GNU_SOURCE",
+        "_DEFAULT_SOURCE"
+      ],
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/usr/include",
+        "/usr/local/include"
+      ]
+    }
+  ]
+}

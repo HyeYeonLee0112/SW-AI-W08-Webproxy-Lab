@@ -31,8 +31,9 @@ int main(int argc, char **argv)
     exit(1);
   }
 
+
   listenfd = Open_listenfd(argv[1]);
-  while (1)
+  
   {
     clientlen = sizeof(clientaddr);
     connfd = Accept(listenfd, (SA *)&clientaddr,
@@ -43,4 +44,11 @@ int main(int argc, char **argv)
     doit(connfd);  // line:netp:tiny:doit
     Close(connfd); // line:netp:tiny:close
   }
+  /*
+  서버에 텍스트 줄을 전송하고 서버에서 echo줄을 읽어서 그 결과를 표준 출력으로 인쇄한다
+  ㄹ프는 fget가 표준 입력을 
+  
+  
+  
+  */
 }
