@@ -98,6 +98,55 @@
                 "panel": "new"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Echo server build",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/webproxy-lab && make echo_server",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/webproxy-lab"
+            }
+        },
+        {
+            "label": "Echo server clean",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/webproxy-lab && make clean",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}/webproxy-lab"
+            }
+        },
+        {
+            "label": "Echo server clean-and-build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Echo server clean",
+                "Echo server build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
         }
     ]
 }

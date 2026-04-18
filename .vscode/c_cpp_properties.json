@@ -14,7 +14,22 @@
       "includePath": [
         "${workspaceFolder}/**",
         "/usr/include",
+        "/usr/include/x86_64-linux-gnu",
         "/usr/local/include"
+      ],
+      "systemIncludePath": [
+        "/usr/include",
+        "/usr/include/x86_64-linux-gnu",
+        "/usr/local/include"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/**",
+          "/usr/include",
+          "/usr/include/x86_64-linux-gnu",
+          "/usr/local/include"
+        ],
+        "limitSymbolsToIncludedHeaders": true
       ]
     }
   ]
