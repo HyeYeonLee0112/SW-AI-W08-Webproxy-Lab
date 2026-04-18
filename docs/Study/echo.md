@@ -2,8 +2,11 @@
 
 ## 목차
 - [1. fd](#1-fd)
-- [2. echo_client 소스코드 분석](#2-echo_client-%EC%86%8C%EC%8A%A4%EC%BD%94%EB%93%9C-%EB%B6%84%EC%84%9D)
-
+- [2. echo_client 소스코드 분석](#2-echo_client-소스코드-분석)
+  - [2.7.1 핵심 흐름](#271-핵심-흐름)
+  - [2.8 echo_client 데이터 루프](#28-echo_client-데이터-루프)
+  - [2.9 `rio_t`는 무엇인가](#29-rio_t는-무엇인가)
+- [3. open_clientfd 실제 코드](#3-open_clientfd-실제-코드)
 ---
 
 # 1. fd
@@ -28,6 +31,8 @@
 - 소켓을 위한 `connect`, `read`, `write`, `close`는 모두 fd를 받아 동작한다.
 - `open_clientfd`가 성공하면 반환하는 값 `clientfd`는 “연결된 소켓 객체를 가리키는 정수형 핸들”이다.
 - 사용 완료 후 `Close(clientfd)`로 해제해야 자원 누수를 막는다.
+- `fd` 숫자 자체가 없어지는 것은 아니다.
+- 대신 그 `fd`가 가리키던 커널 자원과의 연결이 끊기고, OS가 그 자원을 정리할 수 있게 된다.
 
 ## 1.4 `fd`가 “가리키는 값”처럼 보이는 이유
 - `fd`는 `int`이므로 보통 “정수 번호”로 보이지만, 의미상 커널 객체의 참조 포인트다.
@@ -138,7 +143,7 @@ char *port = argv[2];
 // host 는 "example.com"의 e 주소, port는 "8080"의 8 주소를 가리킴
 ```
 
-## 2.6 `open_clientfd` 호출 및 반환
+## 2.7 `open_clientfd` 호출 및 반환
 
 ```c
 clientfd = Open_clientfd(host, port);
@@ -146,46 +151,6 @@ clientfd = Open_clientfd(host, port);
 
 - `clientfd`가 0보다 크면 연결된 소켓 fd 획득 성공.
 - `<0`이면 실패.
-
-## 2.7 `open_clientfd` 핵심 동작 정리 (CS:APP 패턴)
-
-```c
-/* $begin open_clientfd */
-int open_clientfd(char *hostname, char *port) {
-    int clientfd, rc;
-    struct addrinfo hints, *listp, *p;
-
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_NUMERICSERV;
-    hints.ai_flags |= AI_ADDRCONFIG;
-
-    if ((rc = getaddrinfo(hostname, port, &hints, &listp)) != 0) {
-        fprintf(stderr, "getaddrinfo failed (%s:%s): %s\n", hostname, port, gai_strerror(rc));
-        return -2;
-    }
-
-    for (p = listp; p; p = p->ai_next) {
-        if ((clientfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0)
-            continue;
-
-        if (connect(clientfd, p->ai_addr, p->ai_addrlen) != -1)
-            break;
-
-        if (close(clientfd) < 0) {
-            fprintf(stderr, "open_clientfd: close failed: %s\n", strerror(errno));
-            return -1;
-        }
-    }
-
-    freeaddrinfo(listp);
-    if (!p)
-        return -1;
-    else
-        return clientfd;
-}
-/* $end open_clientfd */
-```
 
 ### 2.7.1 핵심 흐름
 1. `getaddrinfo`로 서버 주소 후보 리스트를 얻는다.
@@ -379,3 +344,47 @@ rio.rio_bufptr = rio.rio_buf; //내부 버퍼의 시작 위치를 가리킨다.
 - `host`, `port`는 그 배열의 문자열 시작 주소를 담는 `char*` 포인터.
 - `open_clientfd`는 이 문자열을 바탕으로 주소 해석 후 소켓을 만들어 정수형 `fd`를 돌려준다.
 - `fd`는 커널 소켓 객체를 가리키는 참조로 사용된다.
+
+---
+
+## 3. `open_clientfd` 실제 코드
+
+`2.7.1`에서 설명한 흐름이 아래 코드로 구현된다.
+
+```c
+/* $begin open_clientfd */
+int open_clientfd(char *hostname, char *port) {
+    int clientfd, rc;
+    struct addrinfo hints, *listp, *p;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_NUMERICSERV;
+    hints.ai_flags |= AI_ADDRCONFIG;
+
+    if ((rc = getaddrinfo(hostname, port, &hints, &listp)) != 0) {
+        fprintf(stderr, "getaddrinfo failed (%s:%s): %s\n", hostname, port, gai_strerror(rc));
+        return -2;
+    }
+
+    for (p = listp; p; p = p->ai_next) {
+        if ((clientfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0)
+            continue;
+
+        if (connect(clientfd, p->ai_addr, p->ai_addrlen) != -1)
+            break;
+
+        if (close(clientfd) < 0) {
+            fprintf(stderr, "open_clientfd: close failed: %s\n", strerror(errno));
+            return -1;
+        }
+    }
+
+    freeaddrinfo(listp);
+    if (!p)
+        return -1;
+    else
+        return clientfd;
+}
+/* $end open_clientfd */
+```

@@ -51,7 +51,6 @@ int main(int argc, char **argv)
     */
     while (fgets(buf, MAXLINE, stdin) != NULL) {
 
-       
         //송신(클라 소켓에 buf를 보냄)
         /* Rio_writen 함수: 클라이언트 소켓에 버퍼의 데이터를 안정적으로 전송
         소켓(clientfd)에 
@@ -77,7 +76,12 @@ int main(int argc, char **argv)
         
     }
 
-    //식별자를 닫는다 => 클라의 소켓을 닫음
+    /*식별자를 닫는다(식별자는.. 자원이얌)
+    해당 fd를 더 이상 사용하지 않겠다고 OS에 알림
+    커널이 그 fd에 연결된 자원 참조를 해제
+    소켓이면 연결에 대한 커널 자원을 정리
+    파일/소켓 테이블에서 그 번호를 다시 쓸 수 있게 만듦
+    */
     Close(clientfd);
     return 0;
 }
