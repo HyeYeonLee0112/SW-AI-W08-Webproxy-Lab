@@ -100,12 +100,12 @@
             "problemMatcher": []
         },
         {
-            "label": "Echo server build",
+            "label": "Echo meta build",
             "type": "shell",
-            "command": "cd ${workspaceFolder}/webproxy-lab && make echo_server",
+            "command": "cd ${workspaceFolder}/webproxy-lab/echo && make",
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
             "presentation": {
                 "reveal": "always",
@@ -115,20 +115,69 @@
                 "$gcc"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/webproxy-lab"
+                "cwd": "${workspaceFolder}/webproxy-lab/echo"
             }
         },
         {
-            "label": "Echo server clean",
+            "label": "Echo meta clean",
             "type": "shell",
-            "command": "cd ${workspaceFolder}/webproxy-lab && make clean",
+            "command": "cd ${workspaceFolder}/webproxy-lab/echo && make clean",
             "presentation": {
                 "reveal": "always",
                 "panel": "new"
             },
             "problemMatcher": [],
             "options": {
-                "cwd": "${workspaceFolder}/webproxy-lab"
+                "cwd": "${workspaceFolder}/webproxy-lab/echo"
+            }
+        },
+        {
+            "label": "Echo meta clean-and-build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Echo meta clean",
+                "Echo meta build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Echo server build",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/webproxy-lab/echo && make",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/webproxy-lab/echo"
+            }
+        },
+        {
+            "label": "Echo server clean",
+            "type": "shell",
+            "command": "cd ${workspaceFolder}/webproxy-lab/echo && make clean",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}/webproxy-lab/echo"
             }
         },
         {

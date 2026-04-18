@@ -143,6 +143,47 @@
             "sourceFileMap": {
                 "/workspaces/webproxy_lab_docker": "${workspaceFolder}"
             }
+        },
+        {
+            "name": "Debug Echo Server (meta scaffold)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/webproxy-lab/echo/echo_server",
+            "args": [
+                "9000"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/webproxy-lab/echo",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "Echo server clean-and-build",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set follow-fork-mode to parent",
+                    "text": "-gdb-set follow-fork-mode parent",
+                    "ignoreFailures": false
+                },
+                {
+                    "description": "Set detach-on-fork to on",
+                    "text": "-gdb-set detach-on-fork on",
+                    "ignoreFailures": false
+                }
+            ],
+            "sourceFileMap": {
+                "/workspaces/webproxy_lab_docker": "${workspaceFolder}"
+            }
         }
     ]
 }
