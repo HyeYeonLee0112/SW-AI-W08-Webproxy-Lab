@@ -1,42 +1,41 @@
 #include <stdio.h>
 
 #include "../csapp.h"
-#include "echo_common.h"
 
-static void echo_client(int connfd)
+void echo(int connfd)
 {
-    rio_t rio;
+    size_t n;
     char buf[MAXLINE];
-    ssize_t n;
+    rio_t rio;
 
     rio_readinitb(&rio, connfd);
-
-    while ((n = echo_handle_one_line(connfd, &rio, buf, MAXLINE)) > 0) {
-        (void) n; // echo handled in common module
+    while ((n = Rio_readlineb(&rio, buf, MAXLINE)) != 0) {
+        Rio_writen(connfd, buf, n);
     }
 }
 
 int main(int argc, char **argv)
 {
-    echo_common_init();
+    int listenfd, connfd;
+    socklen_t clientlen;
+    struct sockaddr_storage clientaddr;
+    char client_hostname[MAXLINE], client_port[MAXLINE];
 
     if (argc != 2) {
         fprintf(stderr, "usage: %s <port>\n", argv[0]);
-        return 1;
+        exit(0);
     }
 
-    int listenfd = Open_listenfd(argv[1]);
-    if (listenfd < 0) {
-        unix_error("Open_listenfd");
-    }
-
+    listenfd = Open_listenfd(argv[1]);
     while (1) {
-        struct sockaddr_storage clientaddr;
-        socklen_t clientlen = sizeof(clientaddr);
-        int connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-        echo_client(connfd);
+        clientlen = sizeof(struct sockaddr_storage);
+        connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+        Getnameinfo((SA *)&clientaddr, clientlen, client_hostname, MAXLINE,
+                    client_port, MAXLINE, 0);
+        printf("Connected to (%s, %s)\n", client_hostname, client_port);
+        echo(connfd);
         Close(connfd);
     }
 
-    return 0;
+    exit(0);
 }
