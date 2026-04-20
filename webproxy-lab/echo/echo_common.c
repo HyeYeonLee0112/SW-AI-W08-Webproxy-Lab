@@ -15,7 +15,7 @@ ssize_t echo_read_line(rio_t *rio, char *buf, size_t n)
 void echo_write_line(int fd, const char *buf, size_t n)
 {
     if (n == 0) return;
-    Rio_writen(fd, buf, n);
+    Rio_writen(fd, (void *)buf, n);
 }
 
 ssize_t echo_handle_one_line(int connfd, rio_t *rio, char *buf, size_t n)

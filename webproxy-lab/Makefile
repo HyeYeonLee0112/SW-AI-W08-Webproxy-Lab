@@ -10,6 +10,8 @@ LDFLAGS = -lpthread
 
 all: proxy
 
+.PHONY: echo
+
 csapp.o: csapp.c csapp.h
 	$(CC) $(CFLAGS) -c csapp.c
 

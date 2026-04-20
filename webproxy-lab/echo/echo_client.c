@@ -21,6 +21,7 @@ int main(int argc, char **argv)
     char *port = argv[2]; 
 
     //열려있는?또는 소켓을 열어서 클라의 소켓 식별자를 반환
+    //Open_clientfd: socket()+connect()
     int clientfd = Open_clientfd(host, port);
 
     //clientfd가 음수면 예외처리

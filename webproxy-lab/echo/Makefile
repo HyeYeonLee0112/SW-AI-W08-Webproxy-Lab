@@ -6,8 +6,16 @@ LDFLAGS = -lpthread
 TOPDIR = ..
 CSAPP_OBJ = $(TOPDIR)/csapp.o
 
+all: server client
+
+server: echo_server
+	@true
+
+client: echo_client
+	@true
+
 $(CSAPP_OBJ):
-\t$(MAKE) -C $(TOPDIR) csapp.o
+	$(MAKE) -C $(TOPDIR) csapp.o
 
 echo_server.o: echo_server.c echo_common.h $(TOPDIR)/csapp.h
 	$(CC) $(CFLAGS) -c echo_server.c
@@ -24,13 +32,6 @@ echo_server: $(CSAPP_OBJ) echo_server.o echo_common.o
 echo_client: $(CSAPP_OBJ) echo_client.o echo_common.o
 	$(CC) $(CFLAGS) echo_client.o echo_common.o $(CSAPP_OBJ) -o echo_client $(LDFLAGS)
 
-server: echo_server
-	@true
-
-client: echo_client
-	@true
-
-all: server client
-
+.PHONY: all server client clean
 clean:
 	rm -f *~ *.o echo_server echo_client
