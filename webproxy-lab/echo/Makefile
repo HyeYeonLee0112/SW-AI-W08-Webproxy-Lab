@@ -17,20 +17,17 @@ client: echo_client
 $(CSAPP_OBJ):
 	$(MAKE) -C $(TOPDIR) csapp.o
 
-echo_server.o: echo_server.c echo_common.h $(TOPDIR)/csapp.h
+echo_server.o: echo_server.c $(TOPDIR)/csapp.h
 	$(CC) $(CFLAGS) -c echo_server.c
 
-echo_client.o: echo_client.c echo_common.h $(TOPDIR)/csapp.h
+echo_client.o: echo_client.c $(TOPDIR)/csapp.h
 	$(CC) $(CFLAGS) -c echo_client.c
 
-echo_common.o: echo_common.c echo_common.h
-	$(CC) $(CFLAGS) -c echo_common.c
+echo_server: $(CSAPP_OBJ) echo_server.o
+	$(CC) $(CFLAGS) echo_server.o $(CSAPP_OBJ) -o echo_server $(LDFLAGS)
 
-echo_server: $(CSAPP_OBJ) echo_server.o echo_common.o
-	$(CC) $(CFLAGS) echo_server.o echo_common.o $(CSAPP_OBJ) -o echo_server $(LDFLAGS)
-
-echo_client: $(CSAPP_OBJ) echo_client.o echo_common.o
-	$(CC) $(CFLAGS) echo_client.o echo_common.o $(CSAPP_OBJ) -o echo_client $(LDFLAGS)
+echo_client: $(CSAPP_OBJ) echo_client.o
+	$(CC) $(CFLAGS) echo_client.o $(CSAPP_OBJ) -o echo_client $(LDFLAGS)
 
 .PHONY: all server client clean
 clean:
