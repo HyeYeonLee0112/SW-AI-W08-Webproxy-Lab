@@ -3,7 +3,8 @@
 ## 목차
 - [1. fd](#1-fd)
 - [2. echo_client 코드 분석](#2-echo_client-코드-분석)
-- [3. open_clientfd 코드 흐름](#3-open_clientfd-코드-흐름)
+- [3. echo_server 코드 분석](#3-echo_server-코드-분석)
+- [4. open_clientfd 코드 흐름](#4-open_clientfd-코드-흐름)
 
 ---
 
@@ -73,6 +74,22 @@ flowchart LR
 
 ---
 
+# 흐름
+```mermaid
+sequenceDiagram
+  participant U as 사용자
+  participant C as echo_client
+  participant S as echo_server
+
+  U->>C: 문자열 입력
+  C->>C: fgets()로 buf 저장
+  C->>S: Rio_writen()으로 전송
+  S->>S: 받은 데이터 확인
+  S->>C: 같은 데이터 응답
+  C->>C: Rio_readlineb()로 응답 읽기
+  C->>U: Fputs()로 화면 출력
+```
+
 # 2. echo_client 코드 분석
 
 ## 2.1 이 프로그램이 하는 일
@@ -141,19 +158,65 @@ while (fgets(buf, MAXLINE, stdin) != NULL) {
 ```mermaid
 flowchart TD
   A["사용자 입력"] --> B["fgets()"]
-  B --> C["buf"]
-  C --> D["Rio_writen()"]
-  D --> E["서버"]
-  E --> F["Rio_readlineb()"]
-  F --> G["buf"]
-  G --> H["Fputs()"]
+  B --> C["buf에 문자열 저장"]
+  C --> D["Rio_writen(clientfd, buf, strlen(buf))"]
+  D --> E["서버로 전송"]
+  E --> F["서버가 같은 데이터 수신"]
+  F --> G["Rio_readlineb(&rio, buf, MAXLINE)"]
+  G --> H["응답 데이터를 buf에 저장"]
+  H --> I["Fputs(buf, stdout)"]
+  I --> J["화면 출력"]
 ```
 
 ---
 
-# 3. open_clientfd 코드 흐름
+# 3. echo_server 코드 분석
 
-## 3.1 전체 흐름
+## 3.1 이 프로그램이 하는 일
+
+- 클라이언트가 보낸 데이터를 읽는다.
+- 읽은 데이터를 그대로 다시 보낸다.
+- 그래서 이름이 `echo server`이다.
+
+## 3.2 서버 함수들
+
+- `main()`: 서버 시작점이다. 소켓을 만들고 연결을 기다린다.
+- `Open_listenfd(host, port)`: 서버가 연결 요청을 받을 수 있도록 `socket()`, `bind()`, `listen()`을 수행한다.
+- `Accept(listenfd, ...)`: 연결 요청을 하나 받아서 클라이언트 전용 연결 소켓을 만든다.
+- `Echo(connfd)`: 클라이언트가 보낸 데이터를 읽고 그대로 다시 보낸다.
+- `Rio_readinitb(&rio, connfd)`: 읽기 버퍼를 초기화한다.
+- `Rio_readlineb(&rio, buf, MAXLINE)`: 한 줄씩 읽는다.
+- `Rio_writen(connfd, buf, n)`: 읽은 데이터를 다시 쓴다.
+- `Close(connfd)`: 연결 소켓을 닫는다.
+
+### `echo server` 흐름
+
+```mermaid
+flowchart TD
+  A["main() 시작"] --> B["Open_listenfd(host, port)"]
+  B --> C["listenfd 준비"]
+  C --> D["Accept(listenfd, ...)"]
+  D --> E["connfd 생성"]
+  E --> F["Echo(connfd)"]
+  F --> G["Rio_readinitb(&rio, connfd)"]
+  G --> H["Rio_readlineb(&rio, buf, MAXLINE)"]
+  H --> I["Rio_writen(connfd, buf, n)"]
+  I --> H
+  H --> J["클라이언트가 닫히면 종료"]
+  J --> K["Close(connfd)"]
+```
+
+### 핵심 정리
+
+- 서버는 `listenfd`로 연결 요청을 기다린다.
+- `accept()`로 클라이언트별 `connfd`가 생긴다.
+- `Echo()`는 `connfd`를 이용해서 읽고 다시 쓰는 루프를 돈다.
+- `Rio_readlineb()`로 한 줄 읽고 `Rio_writen()`으로 같은 내용을 다시 보낸다.
+- 에코 서버는 “받은 걸 그대로 돌려주는 서버”를 이해하기 좋은 예제다.
+
+# 4. open_clientfd 코드 흐름
+
+## 4.1 전체 흐름
 
 ```mermaid
 flowchart TD
@@ -165,19 +228,19 @@ flowchart TD
   F --> B
 ```
 
-## 3.2 왜 주소 목록이 필요한가
+## 4.2 왜 주소 목록이 필요한가
 
 - `host`는 하나의 IP가 아닐 수 있다.
 - IPv4와 IPv6가 함께 있을 수 있다.
 - DNS 결과가 여러 개면 그중 하나를 차례대로 시도해야 한다.
 
-## 3.3 실패 처리
+## 4.3 실패 처리
 
 - `socket()`이 실패하면 다음 시도로 넘어간다.
 - `connect()`가 실패하면 `close()`하고 다음 주소를 시도한다.
 - 모든 시도가 실패하면 에러를 돌려준다.
 
-## 3.4 핵심 정리
+## 4.4 핵심 정리
 
 - `fd`는 프로세스가 커널 자원을 쓰기 위한 번호다.
 - `listen socket`은 연결 요청을 받는 창구다.

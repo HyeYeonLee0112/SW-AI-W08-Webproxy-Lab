@@ -21,21 +21,21 @@ void echo(int connfd)
 
 int main(int argc, char **argv)
 {
-    int listenfd, connfd;
-    socklen_t clientlen;
-    struct sockaddr_storage clientaddr;
-    char client_hostname[MAXLINE], client_port[MAXLINE];
-
     if (argc != 2) {
         fprintf(stderr, "usage: %s <port>\n", argv[0]);
         exit(0);
     }
 
+    struct sockaddr_storage clientaddr;
+    char client_hostname[MAXLINE], client_port[MAXLINE];
+
     /* 서버가 기다릴 포트를 열고, 클라이언트 연결을 받아들일 준비를 한다. */
-    listenfd = Open_listenfd(argv[1]);
+    int listenfd = Open_listenfd(argv[1]);    
 
     /* 무한 루프로 연결 요청을 계속 받는다.
      * accept()는 새 클라이언트마다 별도의 connfd를 돌려준다. */
+    int connfd;
+    socklen_t clientlen;
     while (1) {
         clientlen = sizeof(struct sockaddr_storage);
         connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
