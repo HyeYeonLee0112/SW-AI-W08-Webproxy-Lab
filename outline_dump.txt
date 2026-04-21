@@ -1,0 +1,141 @@
+0|Contents|3
+0|Preface|15
+0|Tour of Computer Systems|31
+1|Information Is Bits + Context|33
+1|Programs Are Translated by Other Programs into Different Forms|34
+1|It Pays to Understand How Compilation Systems Work|36
+1|Processors Read and Interpret Instructions Stored in Memory|37
+1|Caches Matter|41
+1|Storage Devices Form a Hierarchy|44
+1|The Operating System Manages the Hardware|44
+1|Systems Communicate with Other Systems Using Networks|49
+1|Important Themes|52
+1|Summary|57
+0|--- Program Structure & Execution|59
+0|Representing & Manipulating Information|60
+1|Information Storage|63
+1|Integer Representations|88
+1|Integer Arithmetic|113
+1|Floating Point|137
+1|Summary|155
+0|Machine-Level Representation|191
+1|A Historical Perspective|194
+1|Program Encodings|197
+1|Data Formats|205
+1|Accessing Information|207
+1|Arithmetic and Logical Operations|219
+1|Control|228
+1|Procedures|266
+1|Array Allocation and Access|283
+1|Heterogeneous Data Structures|293
+1|Combining Control and Data in Machine-Level Programs|304
+1|Floating-Point Code|321
+1|Summary|337
+0|Processor Architecture|379
+1|The Y86-64 Instruction Set Architecture|383
+1|Logic Design and the Hardware Control Language HCL|400
+1|Sequential Y86-64 Implementations|412
+1|General Principles of Pipelining|440
+1|Pipelined Y86-64 Implementations|449
+1|Summary|498
+0|Optimizing Program Performance|523
+1|Capabilities and Limitations of Optimizing Compilers|526
+1|Expressing Program Performance|530
+1|Program Example|532
+1|Eliminating Loop Inefﬁciencies|536
+1|Reducing Procedure Calls|540
+1|Eliminating Unneeded Memory References|542
+1|Understanding Modern Processors|545
+1|Loop Unrolling|559
+1|Enhancing Parallelism|564
+1|Summary of Results for Optimizing Combining Code|575
+1|Some Limiting Factors|576
+1|Understanding Memory Performance|581
+1|Life in the Real World: Performance Improvement Techniques|589
+1|Identifying and Eliminating Performance Bottlenecks|590
+1|Summary|596
+0|Memory Hierarchy|607
+1|Storage Technologies|609
+1|Locality|632
+1|The Memory Hierarchy|637
+1|Cache Memories|642
+1|Writing Cache-Friendly Code|661
+1|Putting It Together: The Impact of Caches on Program Performance|667
+1|Summary|676
+0|--- Running Programs|695
+0|Linking|696
+1|Compiler Drivers|698
+1|Static Linking|699
+1|Object Files|700
+1|Relocatable Object Files|701
+1|Symbols and Symbol Tables|702
+1|Symbol Resolution|706
+1|Relocation|716
+1|Executable Object Files|722
+1|Loading Executable Object Files|724
+1|Dynamic Linking with Shared Libraries|725
+1|Loading and Linking Shared Libraries from Applications|728
+1|Position-Independent Code (PIC)|731
+1|Library Interpositioning|734
+1|Tools for Manipulating Object Files|740
+1|Summary|740
+0|Exceptional Control Flow|747
+1|Exceptions|749
+1|Processes|758
+1|System Call Error Handling|763
+1|Process Control|764
+1|Signals|782
+1|Nonlocal Jumps|807
+1|Tools for Manipulating Processes|812
+1|Summary|813
+0|Virtual Memory|826
+1|Physical and Virtual Addressing|828
+1|Address Spaces|829
+1|VM as a Tool for Caching|830
+1|VM as a Tool for Memory Management|836
+1|VM as a Tool for Memory Protection|837
+1|Address Translation|838
+1|Case Study: The Intel Core i7/Linux Memory System|850
+1|Memory Mapping|858
+1|Dynamic Memory Allocation|864
+1|Garbage Collection|890
+1|Common Memory-Related Bugs in C Programs|895
+1|Summary|900
+0|--- Interaction & Communication|911
+0|System-Level IO|912
+1|Unix I/O|913
+1|Files|914
+1|Opening and Closing Files|916
+1|Reading and Writing Files|918
+1|Robust Reading and Writing with the |920
+1|Package|920
+1|Reading File Metadata|926
+1|Reading Directory Contents|928
+1|Sharing Files|929
+1|I/O Redirection|932
+1|Standard I/O|934
+1|Putting It Together: Which I/O Functions Should I Use?|934
+1|Summary|936
+0|Network Programming|940
+1|The Client-Server Programming Model|941
+1|Networks|942
+1|The Global IP Internet|947
+1|The Sockets Interface|955
+1|Web Servers|971
+1|Putting It Together: The |979
+1|Web Server|979
+1|Summary|987
+0|Concurrent Programming|993
+1|Concurrent Programming with Processes|995
+1|Concurrent Programming with I/O Multiplexing|999
+1|Concurrent Programming with Threads|1007
+1|Shared Variables in Threaded Programs|1014
+1|Synchronizing Threads with Semaphores|1017
+1|Using Threads for Parallelism|1035
+1|Other Concurrency Issues|1042
+1|Summary|1052
+0|Error Handling|1063
+1|Error Handling in Unix Systems|1064
+1|Error-Handling Wrappers|1065
+0|Refs|1068
+0|Index|1074
